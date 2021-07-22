@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../database/schemas/UserSchema');
+const bcrypt = require('bcrypt')
 const router = express.Router();
 
 router.get("/", (req, res)=>{
@@ -46,9 +47,10 @@ router.post("/", async (req, res)=>{
     }
     return res.status(200).render("register", payload)
   }
-  await User.create(body)
-
-  res.status(200).redirect("/login")
+  body.password = await bcrypt.hash(body.password, 10)
+  const newUser = await User.create(body)
+  req.session.user = newUser;
+  res.status(200).redirect("/")
 });
 
 module.exports = router;
