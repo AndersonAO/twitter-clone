@@ -44,6 +44,14 @@ router.post("/", async (req, res)=>{
   res.status(200).render("login", payload)
 });
 
+router.get("/logout", (req, res)=>{
+  if(req.session) {
+    req.session.destroy(()=>{
+      res.redirect('/login');
+    });
+  }
+});
+
 module.exports = router;
 
 

@@ -11,6 +11,7 @@ const session = require('express-session')
 app.set("view engine", "pug");
 app.set("views", "views");
 app.use(express.urlencoded({ extended: false}));
+app.use(express.json());
 app.use(express.static("public"));
 
 app.use(session({
@@ -25,9 +26,15 @@ const loginRoute = require('./routes/loginRoutes');
 const registerRoute = require('./routes/registerRoutes');
 const logoutRoute = require('./routes/logoutRoutes');
 
+//Api Routes
+const postsApiRoute = require('./routes/api/posts');
+
+
 app.use("/login", loginRoute);
 app.use("/register", registerRoute);
 app.use("/logout", logoutRoute);
+
+app.use("/api/posts", postsApiRoute);
 
 app.get("/", middleware.requireLogin, (req, res)=>{
 

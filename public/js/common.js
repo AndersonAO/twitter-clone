@@ -1,13 +1,13 @@
 window.addEventListener('load', main , false)
 
 function main(){
-  const textarea = document.querySelector('#postTextarea');
-  textarea.addEventListener('input', handleButtonSubmitState);
+  s('#postTextarea').addEventListener('input', toggleButtonSubmitState);
+  s('#submitPostButton').addEventListener('click', submitPostForm);
 }
 
 
 
-function handleButtonSubmitState(e){
+function toggleButtonSubmitState(e){
   const value = e.target.value
   const button = document.querySelector('#submitPostButton');
   if(value && value.trim()){
@@ -15,4 +15,24 @@ function handleButtonSubmitState(e){
     return;
   }
   button.setAttribute('disabled', 'true');
+}
+
+async function submitPostForm(e){
+  const button = e.target;
+  const textbox = s("#postTextarea");
+  const data = {
+    content: textbox.value
+  }
+
+  
+  const response = await axios.post("/api/posts", data)
+  alert(response.data)
+}
+
+
+
+
+// Document querySelector
+function s(identifier){
+  return document.querySelector(identifier)
 }

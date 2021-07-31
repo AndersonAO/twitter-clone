@@ -31,7 +31,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "/images/profilePic.jpeg"
   },
-}, { timestamps: true });
+}, { timestamps: true,  });
 
 
 const User = mongoose.model("users", UserSchema);
