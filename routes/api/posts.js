@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require("../../database/schemas/UserSchema")
+const Post = require("../../database/schemas/PostSchema")
 
 
 
@@ -15,9 +16,22 @@ router.post("/", async (req, res)=>{
     return
   }
 
-  res
-  .status(200)
-  .send("it worked")
+  var postData = {
+    content: req.body.content,
+    postedBy: req.session.user
+  }
+
+  Post.create(postData)
+    .then(async newPost=>{
+      newPost = await User.populate(newPost, { path: "postedBy" })
+      console.log(newPost)
+      res.status(201).send(newPost);
+    })
+    .catch(err=>{
+      console.log(err)
+      res.sendStatus(400)
+    })
+
 });
 
 
