@@ -5,9 +5,11 @@ const Post = require("../../database/schemas/PostSchema")
 
 
 
-router.get("/", (req, res)=>{
-  
-});
+router.get("/", async (req, res, next) => {
+  const posts = await Post.find().populate('postedBy').sort({ createdAt: 1 })
+  const data = posts
+  res.status(200).send(data)
+})
 
 router.post("/", async (req, res)=>{
   if(!req.body.content) {
