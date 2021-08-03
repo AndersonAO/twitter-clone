@@ -3,6 +3,10 @@ window.addEventListener('load', main , false)
 function main(){
   s('#postTextarea').addEventListener('input', toggleButtonSubmitState);
   s('#submitPostButton').addEventListener('click', submitPostForm);
+  document.addEventListener('click', (e)=>{
+    const el = e.target;
+    if(el.classList.contains('likeButton')) return handleLike(el)
+  });
 }
 
 
@@ -36,14 +40,43 @@ async function submitPostForm(e){
   
 }
 
+async function handleLike(button){
+  const postId = getPostId(button);
+
+  if(!postId) return;
+
+  const response = await axios.put(`/api/posts/${postId}/like`)
+  .catch(()=> false)
+  if(!response)return;
+  const data = response.data
+  const span = button.closest('.post').querySelector('.insertLike')
+  span.innerText = data.likes.length || ''
+
+  if(data.likes.includes(userLoggedIn._id)){
+    button.classList.add('active');
+  } else {
+    button.classList.remove('active')
+  }
+
+}
+
+function getPostId(element) {
+  const isRoot = element.classList.contains('post');
+  const rootElement = isRoot ? element : element.closest(".post")
+  const postId = rootElement.getAttribute('data-id')
+  return postId;
+}
+
 function createPostHtml(postData){
 
   const postedBy = postData.postedBy;
   const displayName = postedBy.firstName + " " + postedBy.lastName;
   const timestamp = timeDifference(new Date(), new Date(postData.createdAt))
 
+  const likeButtonActiveCLass = postData.likes.includes(userLoggedIn._id) ? "active" : ""
+
   return /*html*/(`
-  <div class="post">
+  <div class="post" data-id="${postData._id}">
     <div class="mainContentContainer">
       <div class="userImageContainer">
         <img src="${postedBy.profilePic}">
@@ -63,14 +96,15 @@ function createPostHtml(postData){
               <i class="far fa-comment"></i>
             </button>
           </div>
-          <div class="postButtonContainer">
-            <button>
+          <div class="postButtonContainer green">
+            <button class="retweet">
               <i class="fas fa-retweet"></i>
             </button>
           </div>
-          <div class="postButtonContainer">
-            <button>
+          <div class="postButtonContainer red">
+            <button class="likeButton ${likeButtonActiveCLass}">
               <i class="far fa-heart"></i>
+              <span class="insertLike">${postData.likes.length || ''}</span>
             </button>
           </div>
         </div>
