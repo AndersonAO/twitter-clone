@@ -6,6 +6,7 @@ function main(){
   document.addEventListener('click', (e)=>{
     const el = e.target;
     if(el.classList.contains('likeButton')) return handleLike(el)
+    if(el.classList.contains('retweetButton')) return handleRetweet(el)
   });
 }
 
@@ -60,6 +61,27 @@ async function handleLike(button){
 
 }
 
+async function handleRetweet(button){
+  const postId = getPostId(button);
+
+  if(!postId) return;
+
+  const response = await axios.post(`/api/posts/${postId}/retweet`)
+  .catch(()=> false)
+  if(!response)return;
+  const data = response.data
+  console.log(data)
+  // const span = button.closest('.post').querySelector('.insertLike')
+  // span.innerText = data.likes.length || ''
+
+  // if(data.likes.includes(userLoggedIn._id)){
+  //   button.classList.add('active');
+  // } else {
+  //   button.classList.remove('active')
+  // }
+
+}
+
 function getPostId(element) {
   const isRoot = element.classList.contains('post');
   const rootElement = isRoot ? element : element.closest(".post")
@@ -97,7 +119,7 @@ function createPostHtml(postData){
             </button>
           </div>
           <div class="postButtonContainer green">
-            <button class="retweet">
+            <button class="retweetButton">
               <i class="fas fa-retweet"></i>
             </button>
           </div>
