@@ -6,9 +6,13 @@ const Post = require("../../database/schemas/PostSchema")
 
 
 router.get("/", async (req, res, next) => {
-  const posts = await Post.find().populate('postedBy').sort({ createdAt: 1 })
-  const data = posts
-  res.status(200).send(data)
+  const posts = await Post.find()
+  .populate('postedBy')
+  .populate("retweetData")
+  .sort({ createdAt: 1 })
+  let data = posts
+  data = await User.populate(data, { path: "retweetData.postedBy" })
+  res.status(200).send(data);
 })
 
 router.post("/", async (req, res)=>{
