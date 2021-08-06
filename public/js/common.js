@@ -2,19 +2,50 @@ window.addEventListener('load', main , false)
 
 function main(){
   s('#postTextarea').addEventListener('input', toggleButtonSubmitState);
+  s('#replyTextarea').addEventListener('input', toggleButtonSubmitState);
   s('#submitPostButton').addEventListener('click', submitPostForm);
+  s('#replyModal').addEventListener('shown.bs.modal', (e)=> {handleModal(e)});
   document.addEventListener('click', (e)=>{
     const el = e.target;
+    
     if(el.classList.contains('likeButton')) return handleLike(el)
     if(el.classList.contains('retweetButton')) return handleRetweet(el)
   });
 }
 
+async function handleModal(e){
+  const button = e.relatedTarget
+  const postId = getPostId(button)
 
+  const response = await axios.get("/api/posts/"+postId)
+  const data = response.data;
+
+    outputPosts(data, s('#originalPostContainer'));
+  if(!response)return;
+  
+}
+
+function getParents(el, parentSelector) {
+  if (parentSelector === undefined) {
+      parentSelector = document;
+  }
+  var parents = [];
+  var p = el.parentNode;
+  while (p !== parentSelector) {
+      var o = p;
+      parents.push(o);
+      p = o.parentNode;
+  }
+  parents.push(parentSelector);
+  return parents;
+}
 
 function toggleButtonSubmitState(e){
   const value = e.target.value
-  const button = document.querySelector('#submitPostButton');
+  const isModal = e.target.getAttribute('data-function') === 'modal'
+  const button = isModal ? s('#submitReplyButton') : s('#submitPostButton')
+
+
   if(value && value.trim()){
     button.removeAttribute('disabled');
     return;
@@ -129,7 +160,7 @@ function createPostHtml(postData){
         </div>
         <div class="postFooter">
           <div class="postButtonContainer">
-            <button>
+            <button data-bs-toggle="modal" id='replyHandleButton' data-bs-target="#replyModal">
               <i class="far fa-comment"></i>
             </button>
           </div>
@@ -187,6 +218,26 @@ function timeDifference(current, previous) {
 
   else {
       return Math.round(elapsed/msPerYear ) + ' anos atrás';   
+  }
+}
+
+function outputPosts(posts, container){
+  container.innerHTML = '';
+
+  if(!Array.isArray(posts)){
+    
+    posts = [posts]
+    console.log(posts)
+  }
+
+  posts.forEach(post => {
+    let html = createPostHtml(post)
+    console.log(post)
+    container.insertAdjacentHTML('afterbegin', html)
+  })
+
+  if(posts.length == 0) {
+    container.innerHTML = "<span class='noPosts'>Nada para mostrar.</span>"
   }
 }
 

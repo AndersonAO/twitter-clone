@@ -6,3 +6,21 @@ mixin createPostForm(userLoggedIn)
       textarea#postTextarea(placeholder="O que está rolando?")
       .buttonsContainer
         button#submitPostButton(disabled="") Postar
+
+mixin createReplyModal(userLoggedIn)
+  #replyModal.modal.fade(tabindex='-1' aria-labelledby='replyModalLabel' aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#replyModalLabel.modal-title  Responder
+          button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+        .modal-body
+          #originalPostContainer
+          .postFormContainer
+            .userImageContainer
+              img(src=userLoggedIn.profilePic, alt="User's profile picture")
+            .textareaContainer
+              textarea#replyTextarea(placeholder="Digite sua resposta" data-function="modal")
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Fechar
+          button#submitReplyButton.btn.btn-primary(type='button', disabled="") Responder
