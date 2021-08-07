@@ -1,18 +1,31 @@
 window.addEventListener('load', main , false)
 
 function main(){
-  s('#postTextarea').addEventListener('input', toggleButtonSubmitState);
-  s('#replyTextarea').addEventListener('input', toggleButtonSubmitState);
-  s('#submitPostButton').addEventListener('click', submitPostForm);
-  s('#submitReplyButton').addEventListener('click', submitPostForm);
-  s('#replyModal').addEventListener('shown.bs.modal', (e)=> {handleModal(e)});
-  s('#replyModal').addEventListener('hidden.bs.modal', (e)=> s("#originalPostContainer").innerHTML ="");
+  s('#postTextarea')?.addEventListener('input', toggleButtonSubmitState);
+  s('#replyTextarea')?.addEventListener('input', toggleButtonSubmitState);
+  s('#submitPostButton')?.addEventListener('click', submitPostForm);
+  s('#submitReplyButton')?.addEventListener('click', submitPostForm);
+  s('#replyModal')?.addEventListener('shown.bs.modal', (e)=> {handleModal(e)});
+  
+  s('#replyModal')?.addEventListener('hidden.bs.modal', (e)=> s("#originalPostContainer").innerHTML ="");
   document.addEventListener('click', (e)=>{
     const el = e.target;
     
     if(el.classList.contains('likeButton')) return handleLike(el)
     if(el.classList.contains('retweetButton')) return handleRetweet(el)
+    
   });
+}
+
+
+async function handlePost(e){
+  const el = e.target
+  const postId = getPostId(el)
+  console.log(postId)
+  console.log(el.tagName)
+  if(postId && el.tagName.toLowerCase() !== 'button'){
+    window.location.href = '/post/' + postId
+  }
 }
 
 async function handleModal(e){
@@ -23,7 +36,7 @@ async function handleModal(e){
   const response = await axios.get("/api/posts/"+postId)
   const data = response.data;
 
-    outputPosts(data, s('#originalPostContainer'));
+    outputPosts(data.post, s('#originalPostContainer'));
   if(!response)return;
   
 }
@@ -136,7 +149,7 @@ function getPostId(element) {
   return postId;
 }
 
-function createPostHtml(postData){
+function createPostHtml(postData, largeFont = false){
 
   const isRetweet = postData.retweetData !== undefined;
   const retweetedBy = isRetweet ? postData.postedBy.username : null
@@ -148,6 +161,7 @@ function createPostHtml(postData){
 
   const likeButtonActiveCLass = postData.likes.includes(userLoggedIn._id) ? "active" : ""
   const retweetButtonActiveCLass = postData.retweetUsers.includes(userLoggedIn._id) ? "active" : ""
+  const largeFontClass = largeFont ? "largeFont" : "";
 
   let retweetText = '';
   if(isRetweet){
@@ -158,7 +172,7 @@ function createPostHtml(postData){
   }
 
   let replyFlag = "";
-    if(postData.replyTo){
+    if(postData.replyTo && postData._id){
       const replyToUsername = postData.replyTo.postedBy.username;
       replyFlag = `<div class='replyFlag'>
                     Respondendo <a href='/profile/${replyToUsername}'>@${replyToUsername}</a>
@@ -167,7 +181,7 @@ function createPostHtml(postData){
   
 
   return (/*html*/`
-  <div class="post" data-id="${postData._id}">
+  <div class="post ${largeFontClass}" data-id="${postData._id}">
     <div class="postActionContainer">
       ${retweetText}
     </div>
@@ -257,14 +271,37 @@ function outputPosts(posts, container){
     console.log(posts)
   }
 
-  posts.forEach(post => {
+  posts.forEach((post, i) => {
     let html = createPostHtml(post)
     console.log(post)
     container.insertAdjacentHTML('afterbegin', html)
+    const posts = document.querySelectorAll('.post')
+    posts[0].addEventListener('click', handlePost)
   })
 
   if(posts.length == 0) {
     container.innerHTML = "<span class='noPosts'>Nada para mostrar.</span>"
+  }
+}
+
+function outputPostsWithReplies(results, container){
+  container.innerHTML = '';
+
+  if(results.replyTo && results.replyTo._id){
+    let html = createPostHtml(results.replyTo)
+    container.insertAdjacentHTML('beforebegin', html)
+  }
+
+  let mainPostHtml = createPostHtml(results.post, true)
+  container.insertAdjacentHTML('afterbegin', mainPostHtml)
+
+  results.replies.forEach((post, i) => {
+    let html = createPostHtml(post)
+    container.insertAdjacentHTML('beforeend', html)
+  })
+  const posts = document.querySelectorAll('.post')
+  for (let i in posts){
+    posts[i].addEventListener('click', handlePost)
   }
 }
 

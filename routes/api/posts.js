@@ -13,8 +13,21 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   const postId = req.params.id;
   console.log(postId)
-  const post = await getPosts({ _id: postId });
-  res.status(200).send(post[0])
+  let post = await getPosts({ _id: postId });
+
+  post = post[0]
+
+  const results = {
+    post,
+  }
+
+  if(post.replyTo){
+    results.replyTo = post.replyTo;
+  }
+
+  results.replies = await getPosts({ replyTo: postId });
+
+  res.status(200).send(results)
 })
 
 router.post("/", async (req, res)=>{
