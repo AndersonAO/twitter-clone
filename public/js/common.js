@@ -172,7 +172,7 @@ function createPostHtml(postData, largeFont = false){
   }
 
   let replyFlag = "";
-    if(postData.replyTo && postData._id){
+    if(postData.replyTo && postData.replyTo._id){
       const replyToUsername = postData.replyTo.postedBy.username;
       replyFlag = `<div class='replyFlag'>
                     Respondendo <a href='/profile/${replyToUsername}'>@${replyToUsername}</a>
@@ -264,16 +264,15 @@ function timeDifference(current, previous) {
 
 function outputPosts(posts, container){
   container.innerHTML = '';
-
   if(!Array.isArray(posts)){
     
     posts = [posts]
     console.log(posts)
   }
+  console.log(posts)
 
-  posts.forEach((post, i) => {
+  posts.forEach((post) => {
     let html = createPostHtml(post)
-    console.log(post)
     container.insertAdjacentHTML('afterbegin', html)
     const posts = document.querySelectorAll('.post')
     posts[0].addEventListener('click', handlePost)
