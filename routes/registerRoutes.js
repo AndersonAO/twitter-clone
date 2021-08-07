@@ -8,7 +8,6 @@ router.get("/", (req, res)=>{
 });
 
 router.post("/", async (req, res)=>{
-  console.log(req.body)
   const body = {};
   for (let name in req.body){
     if(name == 'password') {

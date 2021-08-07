@@ -4,7 +4,9 @@ function main(){
   s('#postTextarea').addEventListener('input', toggleButtonSubmitState);
   s('#replyTextarea').addEventListener('input', toggleButtonSubmitState);
   s('#submitPostButton').addEventListener('click', submitPostForm);
+  s('#submitReplyButton').addEventListener('click', submitPostForm);
   s('#replyModal').addEventListener('shown.bs.modal', (e)=> {handleModal(e)});
+  s('#replyModal').addEventListener('hidden.bs.modal', (e)=> s("#originalPostContainer").innerHTML ="");
   document.addEventListener('click', (e)=>{
     const el = e.target;
     
@@ -16,6 +18,7 @@ function main(){
 async function handleModal(e){
   const button = e.relatedTarget
   const postId = getPostId(button)
+  s("#submitReplyButton").setAttribute("data-id", postId)
 
   const response = await axios.get("/api/posts/"+postId)
   const data = response.data;
@@ -55,17 +58,31 @@ function toggleButtonSubmitState(e){
 
 async function submitPostForm(e){
   const button = e.target;
-  const textbox = s("#postTextarea");
-  const data = {
-    content: textbox.value
+
+  const isModal = e.target.getAttribute('id') === 'submitReplyButton'
+  const textbox = isModal ? s('#replyTextarea') : s('#postTextarea')
+
+  
+    const data = {
+      content: textbox.value
+    }
+
+  if(isModal){
+    const id = button.getAttribute('data-id');
+    if(!id) return;
+    data.replyTo = id
   }
 
   try{
     const response = await axios.post("/api/posts", data)
-    const html = createPostHtml(response.data)
-    s(".postsContainer").insertAdjacentHTML('afterbegin',html);
-    textbox.value = ''
-    button.setAttribute('disabled', 'true')
+    if(data.replyTo){
+      location.reload();
+    } else {
+      const html = createPostHtml(response.data)
+      s(".postsContainer").insertAdjacentHTML('afterbegin',html);
+      textbox.value = ''
+      button.setAttribute('disabled', 'true')
+    }
   } catch(err){
     console.log(err)
   }
@@ -140,6 +157,15 @@ function createPostHtml(postData){
                   </span>`
   }
 
+  let replyFlag = "";
+    if(postData.replyTo){
+      const replyToUsername = postData.replyTo.postedBy.username;
+      replyFlag = `<div class='replyFlag'>
+                    Respondendo <a href='/profile/${replyToUsername}'>@${replyToUsername}</a>
+                  </div>`
+    }
+  
+
   return (/*html*/`
   <div class="post" data-id="${postData._id}">
     <div class="postActionContainer">
@@ -155,6 +181,7 @@ function createPostHtml(postData){
           <span class="username">@${postedBy.username}</span>
           <span class="date">${timestamp}</span>
         </div>
+        ${replyFlag}
         <div class="postBody">
           <span>${postData.content}</span>
         </div>

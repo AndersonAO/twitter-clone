@@ -29,6 +29,10 @@ router.post("/", async (req, res)=>{
     postedBy: req.session.user
   }
 
+  if(req.body.replyTo){
+    postData.replyTo = req.body.replyTo
+  }
+
   Post.create(postData)
     .then(async newPost=>{
       newPost = await User.populate(newPost, { path: "postedBy" })
@@ -114,9 +118,12 @@ async function getPosts(filter){
   const posts = await Post.find(filter)
   .populate('postedBy')
   .populate("retweetData")
+  .populate("replyTo")
   .sort({ createdAt: 1 })
   .catch(error =>console.log(error))
   let data = posts
+
+  data = await User.populate(data, { path: "replyTo.postedBy" })
   return await User.populate(data, { path: "retweetData.postedBy" })
 }
 
