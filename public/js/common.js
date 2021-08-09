@@ -311,3 +311,7 @@ function outputPostsWithReplies(results, container){
 function s(identifier){
   return document.querySelector(identifier)
 }
+
+function sall(identifier){
+  return document.querySelectorAll(identifier)
+}
