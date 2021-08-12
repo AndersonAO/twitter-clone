@@ -24,3 +24,20 @@ mixin createReplyModal(userLoggedIn)
         .modal-footer
           button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Fechar
           button#submitReplyButton.btn.btn-primary(type='button', disabled="") Responder
+          
+mixin createDeletePostModal()
+  #deletePostModal.modal.fade(tabindex='-1' aria-labelledby='deletePostModalLabel' aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#deletePostModalLabel.modal-title  Deseja apagar a postagem?
+          button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+        .modal-body
+          p Você não tem permissão para apagar isso.
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Fechar
+          button#deletePostButton.btn.btn-primary(type='button') Apagar
+mixin createPostModals(userLoggedIn)
+  +createReplyModal(userLoggedIn)
+  +createDeletePostModal()
+          

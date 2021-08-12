@@ -5,9 +5,11 @@ function main(){
   s('#replyTextarea')?.addEventListener('input', toggleButtonSubmitState);
   s('#submitPostButton')?.addEventListener('click', submitPostForm);
   s('#submitReplyButton')?.addEventListener('click', submitPostForm);
+  s("#deletePostButton")?.addEventListener('click', deletePost)
   s('#replyModal')?.addEventListener('shown.bs.modal', (e)=> {handleModal(e)});
-  
   s('#replyModal')?.addEventListener('hidden.bs.modal', (e)=> s("#originalPostContainer").innerHTML ="");
+  s('#deletePostModal')?.addEventListener('shown.bs.modal', (e)=> {handleModalDelete(e)});
+
   document.addEventListener('click', (e)=>{
     const el = e.target;
     
@@ -17,6 +19,15 @@ function main(){
   });
 }
 
+async function deletePost(e){
+  const postId = e.target.dataset.id;
+
+  const response = await axios.delete(`/api/posts/${postId}`)
+  .catch(()=> false)
+  if(!response)return;
+  location.reload();
+}
+  
 
 async function handlePost(e){
   const el = e.target
@@ -37,9 +48,19 @@ async function handleModal(e){
   const data = response.data;
 
     outputPosts(data.post, s('#originalPostContainer'));
-  if(!response)return;
-  
+  if(!response)return; 
 }
+
+async function handleModalDelete(e){
+  const button = e.relatedTarget
+  const postId = getPostId(button)
+  s("#deletePostButton").setAttribute("data-id", postId)
+
+  const response = await axios.get("/api/posts/"+postId)
+  const data = response.data;
+  if(!response)return; 
+}
+
 
 function getParents(el, parentSelector) {
   if (parentSelector === undefined) {
@@ -178,6 +199,11 @@ function createPostHtml(postData, largeFont = false){
                     Respondendo <a href='/profile/${replyToUsername}'>@${replyToUsername}</a>
                   </div>`
     }
+
+  let buttons = "";
+  if(postData.postedBy._id == userLoggedIn._id){
+    buttons = `<button data-id="${postData._id}" data-bs-toggle="modal" data-bs-target="#deletePostModal"><i class="fas fa-times"></i></button>`
+  }
   
 
   return (/*html*/`
@@ -194,6 +220,7 @@ function createPostHtml(postData, largeFont = false){
           <a href="/profile/${postedBy.username}" class="displayName">${displayName}</a>
           <span class="username">@${postedBy.username}</span>
           <span class="date">${timestamp}</span>
+          ${buttons}
         </div>
         ${replyFlag}
         <div class="postBody">
