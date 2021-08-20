@@ -31,6 +31,26 @@ router.put("/:userId/follow", async (req, res, next) => {
 
 })
 
+router.get("/:userId/followers", async (req, res, next) => {
+  const userId = req.params.userId;
+
+  const user = await User.findOne({_id: userId })
+    .populate("followers")
+  if(!user) return res.json({ msg: 'nenhum usuário foi encontrado!' })
+  res.json(user.followers)
+
+})
+
+router.get("/:userId/following", async (req, res, next) => {
+  const userId = req.params.userId;
+
+  const user = await User.findOne({_id: userId })
+    .populate("following")
+  if(!user) return res.json({ msg: 'nenhum usuário foi encontrado!' })
+  res.json(user.following)
+
+})
+
 
 
 

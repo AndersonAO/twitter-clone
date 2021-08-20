@@ -30,6 +30,20 @@ router.get("/:username/replies", async (req, res) => {
   res.status(200).render("profilePage", payload);
 });
 
+router.get("/:username/followers", async (req, res) => {
+  const payload = await getPayload(req.params.username, req.session.user)
+  payload.selectedTab = "followers"
+
+  res.status(200).render("followersPage", payload);
+});
+
+router.get("/:username/following", async (req, res) => {
+  const payload = await getPayload(req.params.username, req.session.user)
+  payload.selectedTab = "following"
+
+  res.status(200).render("followersPage", payload);
+});
+
 async function getPayload(username, userLoggedIn) {
   const user = await User.findOne({ $or: [ { username: username } ] });
   if (!user){
