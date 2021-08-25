@@ -67,3 +67,19 @@ mixin createImageUploadModal()
         .modal-footer
           button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Cancelar
           button#imageUploadButton.btn.btn-primary(type='button') Salvar
+
+mixin createCoverUploadModal()
+  #coverPhotoUploadModal.modal.fade(tabindex='-1' aria-labelledby='coverPhotoUploadModalLabel' aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#coverPhotoUploadModalLabel.modal-title  Adicione uma nova foto de capa.
+          button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+        .modal-body
+          input#coverPhoto(type="file", name="coverPhoto")
+
+          .imagePreviewContainer
+            img#coverPreview
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Cancelar
+          button#coverPhotoButton.btn.btn-primary(type='button') Salvar

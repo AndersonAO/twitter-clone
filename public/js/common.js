@@ -11,7 +11,9 @@ function main() {
   s("#submitReplyButton")?.addEventListener("click", submitPostForm);
   s("#deletePostButton")?.addEventListener("click", deletePost);
   s("#filePhoto")?.addEventListener("change", handleImageProfile);
+  s("#coverPhoto")?.addEventListener("change", handleCoverProfile);
   s("#imageUploadButton")?.addEventListener("click", handleImageProfileUpload);
+  s("#coverPhotoButton")?.addEventListener("click", handleCoverProfileUpload);
   s("#replyModal")?.addEventListener("shown.bs.modal", (e) => {
     handleModal(e);
   });
@@ -125,6 +127,29 @@ async function handleImageProfile(e) {
   }
 }
 
+async function handleCoverProfile(e) {
+  const input = e.target;
+
+  if(input.files && input.files[0]){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const image  = s("#coverPreview")
+      image.src = e.target.result
+      if(cropper){
+        cropper.destroy();
+      }
+
+      cropper = new Cropper(image,{
+        aspectRatio: 16 / 9,
+        background: false
+      });
+
+    }
+    reader.readAsDataURL(input.files[0])
+  }
+}
+
+
 async function handleImageProfileUpload(e) {
   const canvas = cropper.getCroppedCanvas();
 
@@ -139,6 +164,32 @@ async function handleImageProfileUpload(e) {
 
     const res = await axios({
       url: "/api/users/profilePicture",
+      method: "POST",
+      data: formData,
+      headers: {
+        'Content-Type' : false,
+        'processData': false,
+    },
+    })
+    location.reload()
+  })
+
+}
+
+async function handleCoverProfileUpload(e) {
+  const canvas = cropper.getCroppedCanvas();
+
+  if(!canvas){
+    alert("Não foi possível adicionar uma foto de capa")
+    return;
+  }
+
+  canvas.toBlob(async (blob)=>{
+    const formData = new FormData();
+    formData.append("croppedImage", blob);
+
+    const res = await axios({
+      url: "/api/users/coverPhoto",
       method: "POST",
       data: formData,
       headers: {
