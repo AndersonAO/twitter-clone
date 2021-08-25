@@ -2,7 +2,35 @@ const express = require('express');
 const router = express.Router();
 const User = require("../../database/schemas/UserSchema")
 const Post = require("../../database/schemas/PostSchema")
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
+const { promisify } = require('util')
+const rename = promisify(fs.rename)
+const upload = multer({ dest: "uploads/" })
 
+router.post("/profilePicture", upload.single("croppedImage"), async (req, res, next) => {
+  console.log(req.file)
+  console.log(req.body)
+  if(!req.file) {
+    console.log('Nenhum arquivo foi upado.');
+    return res.sendStatus(400)
+  }
+
+  const filePath = `/uploads/images/${req.file.filename}.png`;
+  const tempPath = req.file.path;
+  const targetPath = path.join(__dirname, `../../${filePath}`)
+
+  await rename(tempPath, targetPath)
+  .catch((error)=> {
+    console.error(error)
+    return res.sendStatus(400)
+  })
+
+  req.session.user = await User.findByIdAndUpdate(req.session.user._id, { profilePic: filePath }, { new: true })
+
+  return res.sendStatus(204)
+})
 
 
 router.put("/:userId/follow", async (req, res, next) => {
@@ -40,6 +68,8 @@ router.get("/:userId/followers", async (req, res, next) => {
   res.json(user.followers)
 
 })
+
+
 
 router.get("/:userId/following", async (req, res, next) => {
   const userId = req.params.userId;

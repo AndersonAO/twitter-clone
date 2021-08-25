@@ -1,11 +1,17 @@
 window.addEventListener("load", main, false);
 
+// Globals
+let cropper;
+
+
 function main() {
   s("#postTextarea")?.addEventListener("input", toggleButtonSubmitState);
   s("#replyTextarea")?.addEventListener("input", toggleButtonSubmitState);
   s("#submitPostButton")?.addEventListener("click", submitPostForm);
   s("#submitReplyButton")?.addEventListener("click", submitPostForm);
   s("#deletePostButton")?.addEventListener("click", deletePost);
+  s("#filePhoto")?.addEventListener("change", handleImageProfile);
+  s("#imageUploadButton")?.addEventListener("click", handleImageProfileUpload);
   s("#replyModal")?.addEventListener("shown.bs.modal", (e) => {
     handleModal(e);
   });
@@ -95,6 +101,54 @@ async function handleModalDelete(e) {
   const response = await axios.get("/api/posts/" + postId);
   const data = response.data;
   if (!response) return;
+}
+
+async function handleImageProfile(e) {
+  const input = e.target;
+
+  if(input.files && input.files[0]){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const image  = s("#imagePreview")
+      image.src = e.target.result
+      if(cropper){
+        cropper.destroy();
+      }
+
+      cropper = new Cropper(image,{
+        aspectRatio: 1 / 1,
+        background: false
+      });
+
+    }
+    reader.readAsDataURL(input.files[0])
+  }
+}
+
+async function handleImageProfileUpload(e) {
+  const canvas = cropper.getCroppedCanvas();
+
+  if(!canvas){
+    alert("Não foi possível adicionar a foto de perfil")
+    return;
+  }
+
+  canvas.toBlob(async (blob)=>{
+    const formData = new FormData();
+    formData.append("croppedImage", blob);
+
+    const res = await axios({
+      url: "/api/users/profilePicture",
+      method: "POST",
+      data: formData,
+      headers: {
+        'Content-Type' : false,
+        'processData': false,
+    },
+    })
+    location.reload()
+  })
+
 }
 
 function getParents(el, parentSelector) {
