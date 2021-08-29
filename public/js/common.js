@@ -10,6 +10,8 @@ function main() {
   s("#submitPostButton")?.addEventListener("click", submitPostForm);
   s("#submitReplyButton")?.addEventListener("click", submitPostForm);
   s("#deletePostButton")?.addEventListener("click", deletePost);
+  s("#pinPostButton")?.addEventListener("click", pinPost);
+  s("#unpinPostButton")?.addEventListener("click", unpinPost);
   s("#filePhoto")?.addEventListener("change", handleImageProfile);
   s("#coverPhoto")?.addEventListener("change", handleCoverProfile);
   s("#imageUploadButton")?.addEventListener("click", handleImageProfileUpload);
@@ -23,6 +25,12 @@ function main() {
   );
   s("#deletePostModal")?.addEventListener("shown.bs.modal", (e) => {
     handleModalDelete(e);
+  });
+  s("#confirmPinModal")?.addEventListener("shown.bs.modal", (e) => {
+    handleModalPin(e);
+  });
+  s("#unpinModal")?.addEventListener("shown.bs.modal", (e) => {
+    handleModalUnpin(e);
   });
 
   document.addEventListener("click", (e) => {
@@ -99,10 +107,42 @@ async function handleModalDelete(e) {
   const button = e.relatedTarget;
   const postId = getPostId(button);
   s("#deletePostButton").setAttribute("data-id", postId);
+}
 
-  const response = await axios.get("/api/posts/" + postId);
-  const data = response.data;
+async function handleModalPin(e) {
+  const button = e.relatedTarget;
+  const postId = getPostId(button);
+  s("#pinPostButton").setAttribute("data-id", postId);
+}
+
+async function handleModalUnpin(e) {
+  const button = e.relatedTarget;
+  const postId = getPostId(button);
+  s("#unpinPostButton").setAttribute("data-id", postId);
+}
+
+async function pinPost(e) {
+  const postId = e.target.dataset.id;
+
+  const response = await axios
+    .put(`/api/posts/${postId}`,{
+      pinned: true,
+    })
+    .catch(() => false);
   if (!response) return;
+  location.reload();
+}
+
+async function unpinPost(e) {
+  const postId = e.target.dataset.id;
+
+  const response = await axios
+    .put(`/api/posts/${postId}`,{
+      pinned: false,
+    })
+    .catch(() => false);
+  if (!response) return;
+  location.reload();
 }
 
 async function handleImageProfile(e) {
@@ -343,8 +383,19 @@ function createPostHtml(postData, largeFont = false) {
   }
 
   let buttons = "";
+  let pinnedPostText = "";
+  let pinTarget = '#confirmPinModal';
   if (postData.postedBy._id == userLoggedIn._id) {
-    buttons = `<button data-id="${postData._id}" data-bs-toggle="modal" data-bs-target="#deletePostModal"><i class="fas fa-times"></i></button>`;
+    let pinnedClass = "";
+    if(postData.pinned == true){
+      pinnedClass = "active";
+      pinTarget = '#unpinModal';
+      pinnedPostText = "<i class='fas fa-thumbtack'></i><span> Fixado</span>"
+    }
+
+    buttons = `
+    <button class="pinButton ${pinnedClass}" data-id="${postData._id}" data-bs-toggle="modal" data-bs-target="${pinTarget}"><i class="fas fa-thumbtack"></i></button>
+    <button data-id="${postData._id}" data-bs-toggle="modal" data-bs-target="#deletePostModal"><i class="fas fa-times"></i></button>`;
   }
 
   return /*html*/ `
@@ -357,6 +408,7 @@ function createPostHtml(postData, largeFont = false) {
         <img src="${postedBy.profilePic}">
       </div>
       <div class="postContentContainer">
+      <div class="pinnedPostText">${pinnedPostText}</div>
         <div class="header">
           <a href="/profile/${
             postedBy.username

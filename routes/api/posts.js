@@ -159,7 +159,25 @@ router.post("/:id/retweet", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  Post.findOneAndDelete(req.params.id)
+  Post.findOneAndDelete({_id: req.params.id})
+    .then(() => res.sendStatus(202))
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(400);
+    });
+});
+
+router.put("/:id", async (req, res) => {
+
+  if(req.body.pinned!== undefined){
+    await Post.updateMany({postedBy: req.session.user}, { pinned: false })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(400);
+    });
+  }
+
+  Post.findOneAndUpdate({_id: req.params.id}, req.body)
     .then(() => res.sendStatus(202))
     .catch((err) => {
       console.log(err);

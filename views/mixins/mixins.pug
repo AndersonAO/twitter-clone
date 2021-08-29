@@ -40,6 +40,8 @@ mixin createDeletePostModal()
 mixin createPostModals(userLoggedIn)
   +createReplyModal(userLoggedIn)
   +createDeletePostModal()
+  +createPinnedPostModal()
+  +createUnpinPostModal()
 
 
 mixin createFollowButton(user, isFollowing)
@@ -83,3 +85,29 @@ mixin createCoverUploadModal()
         .modal-footer
           button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Cancelar
           button#coverPhotoButton.btn.btn-primary(type='button') Salvar
+
+mixin createPinnedPostModal()
+  #confirmPinModal.modal.fade(tabindex='-1' aria-labelledby='confirmPinModalLabel' aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#confirmPinModalLabel.modal-title  Destacar essa postagem?.
+          button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+        .modal-body
+          p Essa postagem irá aparecer no topo do seu perfil. Você só pode destacar uma postagem sua.
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Cancelar
+          button#pinPostButton.btn.btn-primary(type='button') Destacar
+
+mixin createUnpinPostModal()
+  #unpinModal.modal.fade(tabindex='-1' aria-labelledby='unpinModalLabel' aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#unpinModalLabel.modal-title  Deseja remover o destaque?
+          button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+        .modal-body
+          p Essa postagem deixará de aparecer como destacada.
+        .modal-footer
+          button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Cancelar
+          button#unpinPostButton.btn.btn-primary(type='button') Remover
