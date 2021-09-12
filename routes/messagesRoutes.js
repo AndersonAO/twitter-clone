@@ -9,8 +9,8 @@ app.set("views", "views");
 router.get("/", (req, res) => {
   const payload = {
     pageTitle: "Inbox",
-    userLoggedIn: req.session.userLoggedIn,
-    userLoggedInJs: JSON.stringify(req.session.userLoggedIn),
+    userLoggedIn: req.session.user,
+    userLoggedInJs: JSON.stringify(req.session.user),
   };
 
   res.status(200).render("inboxPage", payload);
@@ -19,8 +19,8 @@ router.get("/", (req, res) => {
 router.get("/new", (req, res) => {
   const payload = {
     pageTitle: "Nova mensagem",
-    userLoggedIn: req.session.userLoggedIn,
-    userLoggedInJs: JSON.stringify(req.session.userLoggedIn),
+    userLoggedIn: req.session.user,
+    userLoggedInJs: JSON.stringify(req.session.user),
   };
 
   res.status(200).render("newMessage", payload);

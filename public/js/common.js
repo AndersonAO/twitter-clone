@@ -2,7 +2,8 @@ window.addEventListener("load", main, false);
 
 // Globals
 let cropper;
-
+let timer;
+let selectedUsers = [];
 
 function main() {
   s("#postTextarea")?.addEventListener("input", toggleButtonSubmitState);
@@ -47,28 +48,26 @@ async function handleFollow(el) {
   const userId = button.dataset.user;
 
   const res = await axios.put(`/api/users/${userId}/follow`, {});
-  if(res.status == 404){
+  if (res.status == 404) {
     return;
   }
   const data = res.data;
 
   let difference = 1;
-  if(data.following?.includes(userId)){
-    button.classList.add('following')
-    button.innerText = "Seguindo"
+  if (data.following?.includes(userId)) {
+    button.classList.add("following");
+    button.innerText = "Seguindo";
   } else {
-    button.classList.remove('following')
-    button.innerText = "Seguir"
-    difference = -1
+    button.classList.remove("following");
+    button.innerText = "Seguir";
+    difference = -1;
   }
 
-  const followersLabel = s('#followersValue')
-  if(followersLabel){
+  const followersLabel = s("#followersValue");
+  if (followersLabel) {
     let count = Number(followersLabel.innerText);
     followersLabel.innerText = count + difference;
-
   }
-
 }
 
 async function deletePost(e) {
@@ -125,7 +124,7 @@ async function pinPost(e) {
   const postId = e.target.dataset.id;
 
   const response = await axios
-    .put(`/api/posts/${postId}`,{
+    .put(`/api/posts/${postId}`, {
       pinned: true,
     })
     .catch(() => false);
@@ -137,7 +136,7 @@ async function unpinPost(e) {
   const postId = e.target.dataset.id;
 
   const response = await axios
-    .put(`/api/posts/${postId}`,{
+    .put(`/api/posts/${postId}`, {
       pinned: false,
     })
     .catch(() => false);
@@ -148,57 +147,54 @@ async function unpinPost(e) {
 async function handleImageProfile(e) {
   const input = e.target;
 
-  if(input.files && input.files[0]){
+  if (input.files && input.files[0]) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const image  = s("#imagePreview")
-      image.src = e.target.result
-      if(cropper){
+      const image = s("#imagePreview");
+      image.src = e.target.result;
+      if (cropper) {
         cropper.destroy();
       }
 
-      cropper = new Cropper(image,{
+      cropper = new Cropper(image, {
         aspectRatio: 1 / 1,
-        background: false
+        background: false,
       });
-
-    }
-    reader.readAsDataURL(input.files[0])
+    };
+    reader.readAsDataURL(input.files[0]);
   }
 }
 
 async function handleCoverProfile(e) {
   const input = e.target;
 
-  if(input.files && input.files[0]){
+  if (input.files && input.files[0]) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const image  = s("#coverPreview")
-      image.src = e.target.result
-      if(cropper){
+      const image = s("#coverPreview");
+      image.src = e.target.result;
+      if (cropper) {
         cropper.destroy();
       }
 
-      cropper = new Cropper(image,{
+      cropper = new Cropper(image, {
         aspectRatio: 16 / 9,
-        background: false
+        background: false,
       });
-
-    }
-    reader.readAsDataURL(input.files[0])
+    };
+    reader.readAsDataURL(input.files[0]);
   }
 }
-
 
 async function handleImageProfileUpload(e) {
   const canvas = cropper.getCroppedCanvas();
 
-  if(!canvas){
-    alert("Não foi possível adicionar a foto de perfil")
+  if (!canvas) {
+    alert("Não foi possível adicionar a foto de perfil");
     return;
   }
 
-  canvas.toBlob(async (blob)=>{
+  canvas.toBlob(async (blob) => {
     const formData = new FormData();
     formData.append("croppedImage", blob);
 
@@ -207,24 +203,23 @@ async function handleImageProfileUpload(e) {
       method: "POST",
       data: formData,
       headers: {
-        'Content-Type' : false,
-        'processData': false,
-    },
-    })
-    location.reload()
-  })
-
+        "Content-Type": false,
+        processData: false,
+      },
+    });
+    location.reload();
+  });
 }
 
 async function handleCoverProfileUpload(e) {
   const canvas = cropper.getCroppedCanvas();
 
-  if(!canvas){
-    alert("Não foi possível adicionar uma foto de capa")
+  if (!canvas) {
+    alert("Não foi possível adicionar uma foto de capa");
     return;
   }
 
-  canvas.toBlob(async (blob)=>{
+  canvas.toBlob(async (blob) => {
     const formData = new FormData();
     formData.append("croppedImage", blob);
 
@@ -233,13 +228,12 @@ async function handleCoverProfileUpload(e) {
       method: "POST",
       data: formData,
       headers: {
-        'Content-Type' : false,
-        'processData': false,
-    },
-    })
-    location.reload()
-  })
-
+        "Content-Type": false,
+        processData: false,
+      },
+    });
+    location.reload();
+  });
 }
 
 function getParents(el, parentSelector) {
@@ -384,13 +378,13 @@ function createPostHtml(postData, largeFont = false) {
 
   let buttons = "";
   let pinnedPostText = "";
-  let pinTarget = '#confirmPinModal';
+  let pinTarget = "#confirmPinModal";
   if (postData.postedBy._id == userLoggedIn._id) {
     let pinnedClass = "";
-    if(postData.pinned == true){
+    if (postData.pinned == true) {
       pinnedClass = "active";
-      pinTarget = '#unpinModal';
-      pinnedPostText = "<i class='fas fa-thumbtack'></i><span> Fixado</span>"
+      pinTarget = "#unpinModal";
+      pinnedPostText = "<i class='fas fa-thumbtack'></i><span> Fixado</span>";
     }
 
     buttons = `
@@ -524,30 +518,31 @@ function sall(identifier) {
   return document.querySelectorAll(identifier);
 }
 
-function outputUsers(results, container){
-  container.innerHTML = '';
+function outputUsers(results, container) {
+  container.innerHTML = "";
 
-  results.forEach(result => {
-    const html = createUserHtml(result, true)
-    container.insertAdjacentHTML('afterbegin',html)
-  })
-  if(results.length == 0){
-    container.innerHTML = '<span class="noResults">Nenhum resultado foi encontrado!</span>'
+  results.forEach((result) => {
+    const html = createUserHtml(result, true);
+    container.insertAdjacentHTML("afterbegin", html);
+  });
+  if (results.length == 0) {
+    container.innerHTML =
+      '<span class="noResults">Nenhum resultado foi encontrado!</span>';
   }
 }
 
-function createUserHtml(userData, showFollowButton){
-  
-  const name = userData.firstName + ' ' + userData.lastName;
-  const isFollowing = userLoggedIn.following && userLoggedIn.following.includes(userData._id)
-  const text = isFollowing ? "Seguindo" : "Seguir"
-  const buttonClass = isFollowing ? "followButton following" : "followButton"
+function createUserHtml(userData, showFollowButton) {
+  const name = userData.firstName + " " + userData.lastName;
+  const isFollowing =
+    userLoggedIn.following && userLoggedIn.following.includes(userData._id);
+  const text = isFollowing ? "Seguindo" : "Seguir";
+  const buttonClass = isFollowing ? "followButton following" : "followButton";
 
-  let followButton = '';
-  if(showFollowButton && userLoggedIn._id != userData._id){
+  let followButton = "";
+  if (showFollowButton && userLoggedIn._id != userData._id) {
     followButton = `<div class="followButtonContainer">
                       <button class="${buttonClass}" data-user="${userData._id}">${text}<button>
-                    <div>`
+                    <div>`;
   }
 
   return `<div class='user'>
@@ -561,5 +556,65 @@ function createUserHtml(userData, showFollowButton){
               </div>
             </div>
             ${followButton}
-          <div>`
+          <div>`;
+}
+
+s("#userSearchTextbox")?.addEventListener("keydown", (e) => {
+  clearTimeout(timer);
+  const textBox = e.target;
+  let value = textBox.value;
+  const searchType = textBox.dataset.search;
+
+  if (!value && e.key == "Backspace") {
+    // remove user from selection
+    console.log("cai aqui");
+    return;
+  }
+
+  timer = setTimeout(() => {
+    value = textBox.value.trim();
+    if (!value) {
+      s(".resultsContainer").innerHTML = "";
+      return;
+    }
+    searchUsers(value);
+  }, 500);
+});
+
+async function searchUsers(searchTerm) {
+  const url = "/api/users";
+
+  const response = await axios.get(url + "?search=" + searchTerm);
+  outputSelectableUsers(response.data, s(".resultsContainer"));
+}
+
+function outputSelectableUsers(results, container) {
+  container.innerHTML = "";
+
+  results.forEach((result) => {
+    if (
+      result._id == userLoggedIn._id ||
+      selectedUsers.some((u) => u._id == result._id)
+    )
+      return;
+
+    const html = createUserHtml(result, true);
+    container.insertAdjacentHTML("afterbegin", html);
+    const followButton = s(`.followButton[data-user="${result._id}"]`);
+    const userDiv = followButton.closest(".user");
+    userDiv.addEventListener("click", (e) => userSelected(result, e));
+  });
+  if (results.length == 0) {
+    container.innerHTML =
+      '<span class="noResults">Nenhum Usuário foi encontrado!</span>';
+  }
+}
+
+function userSelected(user) {
+  selectedUsers.push(user);
+  const textBox = s("#userSearchTextbox");
+  textBox.value = "";
+  textBox.focus();
+  s(".resultsContainer").innerHTML = "";
+  s("#createChatButton").disabled = false;
 }

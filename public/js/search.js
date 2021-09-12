@@ -1,5 +1,3 @@
-let timer;
-
 document.querySelector("#searchBox").addEventListener('keydown',(e)=>{
   clearTimeout(timer);
   const textBox = e.target;
